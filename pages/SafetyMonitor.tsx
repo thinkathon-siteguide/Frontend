@@ -3,9 +3,16 @@ import { Upload, Camera, ShieldAlert, CheckCircle, AlertOctagon, Save, List, X, 
 import { analyzeSafetyImage } from '../services/geminiService';
 import { SafetyReport } from '../types';
 import { useApp } from '../context/AppContext';
+import { useWorkspaces } from '../modules/workspace/hooks/useWorkspaces';
+import { useSafetyReports, useSaveSafetyReport } from '../modules/workspace/hooks/useSafetyReports';
 
 const SafetyMonitor: React.FC = () => {
-  const { activeWorkspace, saveSafetyReportToWorkspace } = useApp();
+  const { activeWorkspaceId } = useApp();
+  const { workspaces } = useWorkspaces();
+  const { data: safetyReports = [] } = useSafetyReports(activeWorkspaceId);
+  const saveSafetyReportMutation = useSaveSafetyReport();
+  
+  const activeWorkspace = workspaces.find((w) => w._id === activeWorkspaceId);
   const [image, setImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [report, setReport] = useState<SafetyReport | null>(null);
@@ -119,11 +126,24 @@ const SafetyMonitor: React.FC = () => {
   };
 
   const handleSaveReport = () => {
-    if (activeWorkspace && report) {
-       saveSafetyReportToWorkspace(activeWorkspace.id, report);
-       setImage(null);
-       setReport(null);
-       setViewHistory(true); // Switch to history view after saving
+    if (activeWorkspaceId && report) {
+       saveSafetyReportMutation.mutate(
+        {
+          workspaceId: activeWorkspaceId,
+          reportData: {
+            riskScore: report.riskScore,
+            hazards: report.hazards,
+            summary: report.summary,
+          },
+        },
+        {
+          onSuccess: () => {
+            setImage(null);
+            setReport(null);
+            setViewHistory(true);
+          },
+        }
+      );
     }
   };
 
@@ -163,10 +183,10 @@ const SafetyMonitor: React.FC = () => {
                       </button>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                      {activeWorkspace?.safetyReports?.length === 0 && (
+                      {safetyReports.length === 0 && (
                           <div className="text-center text-gray-400 py-12">No history available.</div>
                       )}
-                      {activeWorkspace?.safetyReports?.map((r, i) => (
+                      {safetyReports.map((r, i) => (
                           <div key={i} className="p-4 border border-gray-100 rounded-xl hover:shadow-md transition-all cursor-default group/item">
                               <div className="flex justify-between items-start">
                                   <div>
