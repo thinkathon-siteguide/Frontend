@@ -371,7 +371,16 @@ const ArchitectureGenerator: React.FC = () => {
                      </div>
                   </div>
                 )}
-      </div>
+             </div>
+          ) : (
+             <div className="h-full flex items-center justify-center">
+                <div className="text-center p-8 opacity-50">
+                    <Bot className="w-12 h-12 mx-auto mb-3 text-gray-300"/>
+                    <p className="text-gray-400 font-bold">Waiting for input...</p>
+                </div>
+             </div>
+          )}
+       </div>
     </div>
   );
 };
