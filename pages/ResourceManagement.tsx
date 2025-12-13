@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import {
   BarChart,
   Bar,
@@ -56,9 +56,12 @@ const ResourceManagement: React.FC = () => {
 
   const activeWorkspace = workspaces.find((w) => w._id === activeWorkspaceId);
   const [recommendation, setRecommendation] = useState<string>(
-    'Loading AI insights...'
+    'AI insights will appear here...'
   );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [loadingRecommendation, setLoadingRecommendation] = useState(false);
+  const recommendationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastRecommendationRef = useRef<string>('');
 
   // Local state for modals/loading
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -77,43 +80,43 @@ const ResourceManagement: React.FC = () => {
     []
   );
 
-  let displayResources: ResourceItem[] = [];
-  let isEditable = false;
-
-  if (activeWorkspaceId) {
-    displayResources = resources.map((r: any) => ({
-      id: r.id,
-      name: r.name,
-      quantity: r.quantity,
-      unit: r.unit,
-      threshold: r.threshold,
-      status: r.status,
-    }));
-    isEditable = true;
-  } else {
-    const aggMap = new Map<string, ResourceItem>();
-    workspaces.forEach((ws) => {
-      ws.resources?.forEach((r: any) => {
-        if (aggMap.has(r.name)) {
-          const existing = aggMap.get(r.name)!;
-          aggMap.set(r.name, {
-            ...existing,
-            quantity: existing.quantity + r.quantity,
-          });
-        } else {
-          aggMap.set(r.name, {
-            id: r.id,
-            name: r.name,
-            quantity: r.quantity,
-            unit: r.unit,
-            threshold: r.threshold,
-            status: r.status,
-          });
-        }
+  const displayResources = useMemo(() => {
+    if (activeWorkspaceId) {
+      return resources.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        quantity: r.quantity,
+        unit: r.unit,
+        threshold: r.threshold,
+        status: r.status,
+      }));
+    } else {
+      const aggMap = new Map<string, ResourceItem>();
+      workspaces.forEach((ws) => {
+        ws.resources?.forEach((r: any) => {
+          if (aggMap.has(r.name)) {
+            const existing = aggMap.get(r.name)!;
+            aggMap.set(r.name, {
+              ...existing,
+              quantity: existing.quantity + r.quantity,
+            });
+          } else {
+            aggMap.set(r.name, {
+              id: r.id,
+              name: r.name,
+              quantity: r.quantity,
+              unit: r.unit,
+              threshold: r.threshold,
+              status: r.status,
+            });
+          }
+        });
       });
-    });
-    displayResources = Array.from(aggMap.values());
-  }
+      return Array.from(aggMap.values());
+    }
+  }, [activeWorkspaceId, resources, workspaces]);
+
+  const isEditable = !!activeWorkspaceId;
 
   // Filter resources
   const filteredResources = displayResources.filter((r) =>
@@ -128,7 +131,42 @@ const ResourceManagement: React.FC = () => {
   const lowItems = displayResources.filter((r) => r.status === 'Low').length;
 
   useEffect(() => {
-    getResourceRecommendations(displayResources).then(setRecommendation);
+    if (recommendationTimeoutRef.current) {
+      clearTimeout(recommendationTimeoutRef.current);
+    }
+
+    if (displayResources.length === 0) {
+      setRecommendation('Add resources to get AI insights...');
+      return;
+    }
+
+    const resourcesKey = JSON.stringify(
+      displayResources.map((r) => ({ name: r.name, quantity: r.quantity, status: r.status }))
+    );
+
+    if (resourcesKey === lastRecommendationRef.current) {
+      return;
+    }
+
+    recommendationTimeoutRef.current = setTimeout(async () => {
+      setLoadingRecommendation(true);
+      try {
+        const insight = await getResourceRecommendations(displayResources);
+        setRecommendation(insight);
+        lastRecommendationRef.current = resourcesKey;
+      } catch (error) {
+        console.error('Failed to get AI recommendation:', error);
+        setRecommendation('Unable to generate insights at this time.');
+      } finally {
+        setLoadingRecommendation(false);
+      }
+    }, 2000);
+
+    return () => {
+      if (recommendationTimeoutRef.current) {
+        clearTimeout(recommendationTimeoutRef.current);
+      }
+    };
   }, [displayResources]);
 
   const handleWorkspaceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -340,10 +378,15 @@ const ResourceManagement: React.FC = () => {
           <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
           <div className="relative z-10">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-              <Sparkles size={12} className="text-yellow-400" /> AI Insight
+              {loadingRecommendation ? (
+                <Loader2 size={12} className="text-yellow-400 animate-spin" />
+              ) : (
+                <Sparkles size={12} className="text-yellow-400" />
+              )}{' '}
+              AI Insight
             </p>
             <p className="mt-2 text-sm text-gray-200 leading-relaxed italic">
-              "{recommendation}"
+              {loadingRecommendation ? 'Analyzing resources...' : `"${recommendation}"`}
             </p>
           </div>
         </div>

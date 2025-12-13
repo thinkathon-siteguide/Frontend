@@ -90,7 +90,9 @@ const SafetyMonitor: React.FC = () => {
     } catch (err: any) {
       console.error('Camera Error:', err);
       setIsCameraOpen(false);
-      setErrorMsg(err.message || 'Camera access failed');
+      const errorMessage = err.message || 'Camera access failed';
+      setErrorMsg(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -339,6 +341,28 @@ const SafetyMonitor: React.FC = () => {
                 Activate the AI vision system to detect safety hazards and PPE
                 violations in real-time.
               </p>
+
+              {errorMsg && (
+                <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-white text-sm max-w-xs mx-auto relative">
+                  <button
+                    onClick={() => setErrorMsg(null)}
+                    className="absolute top-2 right-2 text-white/60 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-bold mb-1">Camera Error</p>
+                      <p className="text-xs text-white/80">{errorMsg}</p>
+                      <p className="text-xs text-white/60 mt-2">
+                        Try uploading an image instead or check browser
+                        permissions.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-col gap-3 w-full max-w-xs mx-auto">
                 <button
