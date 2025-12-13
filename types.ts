@@ -38,20 +38,29 @@ export interface ArchitectureMaterial {
 }
 
 export interface ArchitectureStage {
-  phase: string;
+  phase?: string;
+  name?: string;
+  description?: string;
   duration: string;
-  tasks: string[];
+  tasks?: string[];
 }
 
 export interface ArchitecturePlan {
-  sections: ArchitectureSection[];
-  materials: ArchitectureMaterial[];
+  sections?: ArchitectureSection[];
+  materials: ArchitectureMaterial[] | string[];
   stages: ArchitectureStage[];
   summary: string;
   createdAt?: Date;
 }
 
-export interface GeneratedArchitecture extends ArchitecturePlan {}
+export interface GeneratedArchitecture {
+  costEstimate?: string;
+  timeline?: string;
+  sections?: ArchitectureSection[];
+  materials: ArchitectureMaterial[] | string[];
+  stages: ArchitectureStage[];
+  summary: string;
+}
 
 export interface SafetyReport {
   id?: string;
