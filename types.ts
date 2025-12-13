@@ -1,18 +1,20 @@
-
 export interface Workspace {
-  id: string;
+  _id: string;
+  userId: string;
   name: string;
   location: string;
   stage: string;
+  type: string;
+  budget: string;
   status: 'Under Construction' | 'Finished';
   progress: number;
   safetyScore: number;
-  lastUpdated: string;
-  budget?: string;
-  type?: string;
+  lastUpdated: Date;
   resources: ResourceItem[];
-  architecturePlan?: GeneratedArchitecture;
-  safetyReports?: SafetyReport[];
+  architecturePlan?: ArchitecturePlan;
+  safetyReports: SafetyReport[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ResourceItem {
@@ -24,22 +26,37 @@ export interface ResourceItem {
   status: 'Good' | 'Low' | 'Critical';
 }
 
-export interface GeneratedArchitecture {
-  costEstimate: string;
-  timeline: string;
-  materials: string[];
-  stages: {
-    name: string;
-    description: string;
-    duration: string;
-  }[];
-  summary: string;
+export interface ArchitectureSection {
+  title: string;
+  description: string;
 }
+
+export interface ArchitectureMaterial {
+  name: string;
+  quantity: string;
+  specification: string;
+}
+
+export interface ArchitectureStage {
+  phase: string;
+  duration: string;
+  tasks: string[];
+}
+
+export interface ArchitecturePlan {
+  sections: ArchitectureSection[];
+  materials: ArchitectureMaterial[];
+  stages: ArchitectureStage[];
+  summary: string;
+  createdAt?: Date;
+}
+
+export interface GeneratedArchitecture extends ArchitecturePlan {}
 
 export interface SafetyReport {
   id?: string;
   date?: string;
-  riskScore: number; // 0-100
+  riskScore: number;
   hazards: {
     description: string;
     severity: 'Low' | 'Medium' | 'High';

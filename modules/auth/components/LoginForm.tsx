@@ -8,8 +8,8 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onToggle }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('umargafia@gmail.com');
+  const [password, setPassword] = useState('11111111');
   const { login } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
@@ -24,7 +24,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onToggle }) => {
           navigate('/');
         },
         onError: (err: any) => {
-           setError(err.response?.data?.message || 'Invalid credentials');
+          setError(err.response?.data?.message || 'Invalid credentials');
         },
       }
     );
@@ -32,77 +32,83 @@ const LoginForm: React.FC<LoginFormProps> = ({ onToggle }) => {
 
   return (
     <div>
-        <div className="mb-8">
-            <h2 className="text-3xl font-bold text-thinklab-black mb-2 font-serif">
-                Welcome Back
-            </h2>
-            <p className="text-gray-500">
-                Enter your credentials to access your workspace.
-            </p>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-thinklab-black mb-2 font-serif">
+          Welcome Back
+        </h2>
+        <p className="text-gray-500">
+          Enter your credentials to access your workspace.
+        </p>
+      </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 text-red-700 text-sm rounded-lg border-l-4 border-thinklab-red animate-fade-in flex items-center">
+          <span className="mr-2">⚠️</span> {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="group animate-fade-in-up animation-delay-100">
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5 transition-colors group-focus-within:text-thinklab-red">
+            Email Address
+          </label>
+          <div className="relative">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-thinklab-red focus:ring-4 focus:ring-red-50 outline-none transition-all duration-300 bg-gray-50 focus:bg-white"
+              placeholder="name@company.com"
+            />
+          </div>
         </div>
 
-        {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-700 text-sm rounded-lg border-l-4 border-thinklab-red animate-fade-in flex items-center">
-                <span className="mr-2">⚠️</span> {error}
-            </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="group animate-fade-in-up animation-delay-100">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5 transition-colors group-focus-within:text-thinklab-red">Email Address</label>
-                <div className="relative">
-                     <input 
-                       type="email" 
-                       required
-                       value={email}
-                       onChange={(e) => setEmail(e.target.value)}
-                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-thinklab-red focus:ring-4 focus:ring-red-50 outline-none transition-all duration-300 bg-gray-50 focus:bg-white"
-                       placeholder="name@company.com"
-                     />
-                </div>
-            </div>
-
-            <div className="group animate-fade-in-up animation-delay-200">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5 transition-colors group-focus-within:text-thinklab-red">Password</label>
-                <div className="relative">
-                    <input 
-                       type="password" 
-                       required
-                       value={password}
-                       onChange={(e) => setPassword(e.target.value)}
-                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-thinklab-red focus:ring-4 focus:ring-red-50 outline-none transition-all duration-300 bg-gray-50 focus:bg-white"
-                       placeholder="••••••••"
-                    />
-                </div>
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={login.isPending}
-              className="w-full bg-thinklab-black text-white font-bold py-3.5 rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center mt-2 group animate-fade-in-up animation-delay-300"
-            >
-              {login.isPending ? (
-                   <Loader2 className="animate-spin w-5 h-5 group-hover:text-thinklab-red transition-colors"/> 
-              ) : (
-                   <span className="flex items-center gap-2">
-                       Sign In
-                       <span className="group-hover:translate-x-1 transition-transform">→</span>
-                   </span>
-              )}
-            </button>
-        </form>
-
-        <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-            <p className="text-gray-500 text-sm">
-                New to ThinkLab? 
-                <button 
-                    onClick={onToggle}
-                    className="text-thinklab-red font-bold hover:text-red-700 hover:underline transition-colors ml-1"
-                >
-                    Create an account
-                </button>
-            </p>
+        <div className="group animate-fade-in-up animation-delay-200">
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5 transition-colors group-focus-within:text-thinklab-red">
+            Password
+          </label>
+          <div className="relative">
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-thinklab-red focus:ring-4 focus:ring-red-50 outline-none transition-all duration-300 bg-gray-50 focus:bg-white"
+              placeholder="••••••••"
+            />
+          </div>
         </div>
+
+        <button
+          type="submit"
+          disabled={login.isPending}
+          className="w-full bg-thinklab-black text-white font-bold py-3.5 rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center mt-2 group animate-fade-in-up animation-delay-300"
+        >
+          {login.isPending ? (
+            <Loader2 className="animate-spin w-5 h-5 group-hover:text-thinklab-red transition-colors" />
+          ) : (
+            <span className="flex items-center gap-2">
+              Sign In
+              <span className="group-hover:translate-x-1 transition-transform">
+                →
+              </span>
+            </span>
+          )}
+        </button>
+      </form>
+
+      <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+        <p className="text-gray-500 text-sm">
+          New to ThinkLab?
+          <button
+            onClick={onToggle}
+            className="text-thinklab-red font-bold hover:text-red-700 hover:underline transition-colors ml-1"
+          >
+            Create an account
+          </button>
+        </p>
+      </div>
     </div>
   );
 };
