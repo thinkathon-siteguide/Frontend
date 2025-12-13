@@ -12,6 +12,7 @@ interface AppContextType {
   logout: () => void;
   activeWorkspaceId: string | null;
   setActiveWorkspace: (id: string | null) => void;
+  isLoadingAuth: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -19,20 +20,28 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('thinklab_user');
-    
-    if (token && storedUser) {
+    const loadUser = () => {
       try {
-        setUser(JSON.parse(storedUser));
+        const token = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('thinklab_user');
+        
+        if (token && storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+        }
       } catch (err) {
         console.error('Failed to parse stored user:', err);
         localStorage.removeItem('token');
         localStorage.removeItem('thinklab_user');
+      } finally {
+        setIsLoadingAuth(false);
       }
-    }
+    };
+
+    loadUser();
   }, []);
 
   const logout = () => {
@@ -50,6 +59,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         logout,
         activeWorkspaceId,
         setActiveWorkspace: setActiveWorkspaceId,
+        isLoadingAuth,
       }}
     >
       {children}

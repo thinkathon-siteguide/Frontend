@@ -25,8 +25,19 @@ const queryClient = new QueryClient({
 
 // Guard component to protect routes
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useApp();
+  const { user, isLoadingAuth } = useApp();
   const location = useLocation();
+
+  if (isLoadingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-thinklab-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-thinklab-grey font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
