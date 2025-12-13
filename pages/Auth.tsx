@@ -60,8 +60,8 @@ const Auth: React.FC = () => {
 
         <div className="relative z-10 animate-fade-in-up">
             <div className="mb-6 flex justify-center">
-                <div className="p-4 bg-white/10 rounded-full backdrop-blur-sm border border-white/20 shadow-2xl">
-                     <Logo className="w-20 h-20 text-white" />
+                <div className="p-4 bg-white/10 rounded-full   backdrop-blur-sm border border-white/20 shadow-2xl">
+                     <Logo className="w-20  rounded-full h-20 text-white" />
                 </div>
             </div>
             <h1 className="text-4xl lg:text-5xl font-serif font-bold tracking-tight mb-4">
@@ -77,11 +77,11 @@ const Auth: React.FC = () => {
             </div>
             
             {/* Dots Decoration */}
-             <div className="flex gap-2 justify-center mt-8">
+             {/* <div className="flex gap-2 justify-center mt-8">
                 <div className="w-2 h-2 rounded-full bg-thinklab-red"></div>
                 <div className="w-2 h-2 rounded-full bg-gray-600"></div>
                 <div className="w-2 h-2 rounded-full bg-gray-600"></div>
-             </div>
+             </div> */}
         </div>
       </div>
 

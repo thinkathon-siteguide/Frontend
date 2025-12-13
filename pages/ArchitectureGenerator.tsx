@@ -283,7 +283,7 @@ const ArchitectureGenerator: React.FC = () => {
          {result ? (
             <div className="h-full flex flex-col space-y-4 overflow-y-auto pr-1">
                 {/* Visualizer Header */}
-                <div className="bg-gradient-to-r from-thinklab-black to-gray-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden group">
+                <div className="bg-gradient-to-r  from-thinklab-black to-gray-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-white/10 transition-colors"></div>
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div className="flex justify-between items-start">
@@ -294,7 +294,7 @@ const ArchitectureGenerator: React.FC = () => {
                                 </button>
                             </div>
                         </div>
-                        <div className="mt-8">
+                        <div className="mt-8 " >
                             <h2 className="text-3xl font-serif font-bold mb-2">{activeWorkspace.name} - Concept</h2>
                             <p className="text-gray-300 text-sm max-w-md opacity-90 leading-relaxed">
                                 {result.summary}
