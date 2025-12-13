@@ -446,7 +446,11 @@ const WorkspaceManagement: React.FC = () => {
                        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:border-thinklab-black focus:ring-1 focus:ring-thinklab-black outline-none transition-all"
                        placeholder="50,000,000"
                        value={formData.budget}
-                       onChange={(e) => setFormData({...formData, budget: e.target.value})}
+                       onChange={(e) => {
+                           const value = e.target.value.replace(/[^0-9]/g, '');
+                           const formatted = value ? parseInt(value).toLocaleString() : '';
+                           setFormData({...formData, budget: formatted});
+                       }}
                      />
                   </div>
                   <div>
