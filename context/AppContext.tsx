@@ -8,6 +8,7 @@ interface User {
 
 interface AppContextType {
   user: User | null;
+  setUser: (user: User | null) => void;
   login: (email: string, pass: string) => Promise<boolean>;
   register: (name: string, email: string, pass: string) => Promise<boolean>;
   logout: () => void;
@@ -235,6 +236,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   return (
     <AppContext.Provider value={{ 
       user,
+      setUser,
       login,
       register,
       logout,

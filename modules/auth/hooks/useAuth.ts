@@ -1,7 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 import api from '../../../services/api';
+import { useApp } from '../../../context/AppContext';
 
 export const useAuth = () => {
+  const { setUser } = useApp();
+
   const loginMutation = useMutation({
     mutationFn: async ({ email, password }: any) => {
       const response = await api.post('/auth/login', { email, password });
@@ -10,6 +13,7 @@ export const useAuth = () => {
     onSuccess: (data: any) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('thinklab_user', JSON.stringify(data.user));
+      setUser(data.user);
     },
   });
 
@@ -21,6 +25,7 @@ export const useAuth = () => {
     onSuccess: (data: any) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('thinklab_user', JSON.stringify(data.user));
+      setUser(data.user);
     },
   });
 
