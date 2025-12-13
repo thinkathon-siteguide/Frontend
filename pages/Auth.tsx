@@ -53,6 +53,10 @@ const Auth: React.FC = () => {
             <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(255,255,255,0.1)_0%,transparent_60%)] animate-pulse"></div>
         </div>
         <div className="absolute top-0 right-0 w-full h-full opacity-5 bg-gradient-to-br from-thinklab-red to-transparent pointer-events-none"></div>
+        
+        {/* Floating Shapes */}
+        <div className="absolute top-20 right-20 w-32 h-32 bg-thinklab-red rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+        <div className="absolute bottom-20 left-20 w-40 h-40 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-float animation-delay-200"></div>
 
         <div className="relative z-10 animate-fade-in-up">
             <div className="mb-6 flex justify-center">
@@ -101,7 +105,7 @@ const Auth: React.FC = () => {
 
             <form onSubmit={handleAuth} className="space-y-6">
                 {!isLogin && (
-                    <div className="group">
+                    <div className="group animate-slide-in-right">
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5 transition-colors group-focus-within:text-thinklab-red">Full Name</label>
                         <div className="relative">
                             <input 
@@ -116,7 +120,7 @@ const Auth: React.FC = () => {
                     </div>
                 )}
 
-                <div className="group">
+                <div className="group animate-fade-in-up animation-delay-100">
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5 transition-colors group-focus-within:text-thinklab-red">Email Address</label>
                     <div className="relative">
                          <input 
@@ -130,7 +134,7 @@ const Auth: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="group">
+                <div className="group animate-fade-in-up animation-delay-200">
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5 transition-colors group-focus-within:text-thinklab-red">Password</label>
                     <div className="relative">
                         <input 
@@ -147,7 +151,7 @@ const Auth: React.FC = () => {
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="w-full bg-thinklab-black text-white font-bold py-3.5 rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center mt-2 group"
+                  className="w-full bg-thinklab-black text-white font-bold py-3.5 rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center mt-2 group animate-fade-in-up animation-delay-300"
                 >
                   {loading ? (
                        <Loader2 className="animate-spin w-5 h-5 group-hover:text-thinklab-red transition-colors"/> 
