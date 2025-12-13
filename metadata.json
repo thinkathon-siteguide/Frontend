@@ -1,0 +1,8 @@
+{
+  "name": "BuildAI Workspace",
+  "description": "AI-driven construction management platform for ThinkLab Group.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
