@@ -15,6 +15,7 @@ import {
   History,
   ChevronRight,
   Zap,
+  Download,
 } from 'lucide-react';
 import { analyzeSafetyImage } from '../services/geminiService';
 import { SafetyReport } from '../types';
@@ -24,6 +25,7 @@ import {
   useSafetyReports,
   useSaveSafetyReport,
 } from '../modules/workspace/hooks/useSafetyReports';
+import { toast } from 'react-hot-toast';
 
 const SafetyMonitor: React.FC = () => {
   const { activeWorkspaceId } = useApp();
@@ -147,6 +149,24 @@ const SafetyMonitor: React.FC = () => {
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  const downloadImage = () => {
+    if (!image) return;
+
+    const link = document.createElement('a');
+    const timestamp = new Date().toISOString().split('T')[0];
+    const fileName = `Safety_Image_${
+      activeWorkspace?.name || 'Site'
+    }_${timestamp}.jpg`;
+
+    link.href = image;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success('Image saved to device!');
   };
 
   const handleSaveReport = () => {
@@ -282,12 +302,22 @@ const SafetyMonitor: React.FC = () => {
                 alt="Site preview"
                 className="w-full h-full object-cover"
               />
-              <button
-                onClick={() => setImage(null)}
-                className="absolute top-4 right-4 bg-black/60 text-white p-2 rounded-full hover:bg-black transition opacity-0 group-hover/preview:opacity-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover/preview:opacity-100 transition-opacity">
+                <button
+                  onClick={downloadImage}
+                  className="bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition"
+                  title="Download Image"
+                >
+                  <Download className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setImage(null)}
+                  className="bg-black/60 text-white p-2 rounded-full hover:bg-black transition"
+                  title="Remove Image"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
               {analyzing && (
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center z-40">
                   <div className="w-16 h-16 border-4 border-thinklab-red border-t-white rounded-full animate-spin mb-4"></div>
@@ -477,22 +507,30 @@ const SafetyMonitor: React.FC = () => {
 
             {/* Action Bar */}
             {activeWorkspace && (
-              <div className="grid grid-cols-2 gap-3 pt-4">
+              <div className="space-y-3 pt-4">
                 <button
-                  onClick={() => {
-                    setImage(null);
-                    setReport(null);
-                  }}
-                  className="py-3 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition"
+                  onClick={downloadImage}
+                  className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition flex items-center justify-center"
                 >
-                  Discard
+                  <Download className="w-4 h-4 mr-2" /> Download Image
                 </button>
-                <button
-                  onClick={handleSaveReport}
-                  className="py-3 bg-thinklab-black text-white rounded-xl font-bold hover:bg-gray-800 transition flex items-center justify-center"
-                >
-                  <Save className="w-4 h-4 mr-2" /> Save to Log
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => {
+                      setImage(null);
+                      setReport(null);
+                    }}
+                    className="py-3 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition"
+                  >
+                    Discard
+                  </button>
+                  <button
+                    onClick={handleSaveReport}
+                    className="py-3 bg-thinklab-black text-white rounded-xl font-bold hover:bg-gray-800 transition flex items-center justify-center"
+                  >
+                    <Save className="w-4 h-4 mr-2" /> Save to Log
+                  </button>
+                </div>
               </div>
             )}
           </div>
