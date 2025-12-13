@@ -34,17 +34,27 @@ import {
 } from '../services/geminiService';
 import { useApp } from '../context/AppContext';
 import { ResourceItem } from '../types';
+import { useWorkspaces } from '../modules/workspace/hooks/useWorkspaces';
+import {
+  useResources,
+  useAddResource,
+  useUpdateResourceQuantity,
+  useDeleteResource,
+  useBulkReplaceResources,
+} from '../modules/resource';
 
 const ResourceManagement: React.FC = () => {
-  const {
-    workspaces,
-    activeWorkspace,
-    updateResourceQuantity,
-    setActiveWorkspace,
-    setWorkspaceResources,
-    addResourceToWorkspace,
-    deleteResourceFromWorkspace,
-  } = useApp();
+  const { activeWorkspaceId, setActiveWorkspace } = useApp();
+  const { workspaces, isLoading: isLoadingWorkspaces } = useWorkspaces();
+  const { data: resources = [], isLoading: isLoadingResources } = useResources(
+    activeWorkspaceId || ''
+  );
+  const addResourceMutation = useAddResource();
+  const updateQuantityMutation = useUpdateResourceQuantity();
+  const deleteResourceMutation = useDeleteResource();
+  const bulkReplaceMutation = useBulkReplaceResources();
+
+  const activeWorkspace = workspaces.find((w) => w._id === activeWorkspaceId);
   const [recommendation, setRecommendation] = useState<string>(
     'Loading AI insights...'
   );
@@ -67,18 +77,23 @@ const ResourceManagement: React.FC = () => {
     []
   );
 
-  // Determine which resources to display
   let displayResources: ResourceItem[] = [];
   let isEditable = false;
 
-  if (activeWorkspace) {
-    displayResources = activeWorkspace.resources;
+  if (activeWorkspaceId) {
+    displayResources = resources.map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      quantity: r.quantity,
+      unit: r.unit,
+      threshold: r.threshold,
+      status: r.status,
+    }));
     isEditable = true;
   } else {
-    // Aggregate resources for global view
     const aggMap = new Map<string, ResourceItem>();
     workspaces.forEach((ws) => {
-      ws.resources.forEach((r) => {
+      ws.resources?.forEach((r: any) => {
         if (aggMap.has(r.name)) {
           const existing = aggMap.get(r.name)!;
           aggMap.set(r.name, {
@@ -86,7 +101,14 @@ const ResourceManagement: React.FC = () => {
             quantity: existing.quantity + r.quantity,
           });
         } else {
-          aggMap.set(r.name, { ...r }); // Clone to avoid mutation issues
+          aggMap.set(r.name, {
+            id: r.id,
+            name: r.name,
+            quantity: r.quantity,
+            unit: r.unit,
+            threshold: r.threshold,
+            status: r.status,
+          });
         }
       });
     });
@@ -126,7 +148,7 @@ const ResourceManagement: React.FC = () => {
     try {
       const aiResources = await generateResourceAllocation(
         activeWorkspace.type || 'Construction',
-        activeWorkspace.stage,
+        activeWorkspace.stage || 'Planning',
         activeWorkspace.budget || 'Unknown'
       );
 
@@ -143,13 +165,19 @@ const ResourceManagement: React.FC = () => {
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (activeWorkspace) {
-      addResourceToWorkspace(activeWorkspace.id, {
-        ...newResource,
-        status: newResource.quantity <= newResource.threshold ? 'Low' : 'Good',
-      });
-      setIsAddModalOpen(false);
-      setNewResource({ name: '', quantity: 0, unit: '', threshold: 0 });
+    if (activeWorkspaceId) {
+      addResourceMutation.mutate(
+        {
+          workspaceId: activeWorkspaceId,
+          resourceData: newResource,
+        },
+        {
+          onSuccess: () => {
+            setIsAddModalOpen(false);
+            setNewResource({ name: '', quantity: 0, unit: '', threshold: 0 });
+          },
+        }
+      );
     }
   };
 
@@ -176,9 +204,23 @@ const ResourceManagement: React.FC = () => {
   };
 
   const confirmSuggestions = () => {
-    if (activeWorkspace) {
-      setWorkspaceResources(activeWorkspace.id, suggestedResources);
-      setIsSuggestionModalOpen(false);
+    if (activeWorkspaceId) {
+      bulkReplaceMutation.mutate(
+        {
+          workspaceId: activeWorkspaceId,
+          resources: suggestedResources.map((r) => ({
+            name: r.name,
+            quantity: r.quantity,
+            unit: r.unit,
+            threshold: r.threshold,
+          })),
+        },
+        {
+          onSuccess: () => {
+            setIsSuggestionModalOpen(false);
+          },
+        }
+      );
     }
   };
 
@@ -197,8 +239,10 @@ const ResourceManagement: React.FC = () => {
               }`}
             ></div>
             <p className="text-thinklab-grey text-sm">
-              {activeWorkspace
-                ? `Inventory management for ${activeWorkspace.name}`
+              {activeWorkspaceId
+                ? `Inventory management for ${
+                    activeWorkspace?.name || 'Workspace'
+                  }`
                 : 'Global inventory control center'}
             </p>
           </div>
@@ -209,13 +253,13 @@ const ResourceManagement: React.FC = () => {
           <div className="relative w-full md:w-64">
             <select
               onChange={handleWorkspaceChange}
-              value={activeWorkspace?.id || 'global'}
+              value={activeWorkspaceId || 'global'}
               className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl font-bold text-thinklab-black bg-white focus:outline-none focus:ring-2 focus:ring-thinklab-black appearance-none cursor-pointer shadow-sm hover:border-thinklab-black transition-colors"
             >
               <option value="global">Global View (All Sites)</option>
               <option disabled>──────────────</option>
               {workspaces.map((ws) => (
-                <option key={ws.id} value={ws.id}>
+                <option key={ws._id} value={ws._id}>
                   {ws.name}
                 </option>
               ))}
@@ -224,7 +268,7 @@ const ResourceManagement: React.FC = () => {
             <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
           </div>
 
-          {activeWorkspace && (
+          {activeWorkspaceId && (
             <div className="flex gap-2">
               <button
                 onClick={() => setIsAddModalOpen(true)}
@@ -379,16 +423,16 @@ const ResourceManagement: React.FC = () => {
                     <span className="text-xs text-gray-400">{item.unit}</span>
                   </div>
 
-                  {isEditable && activeWorkspace && (
+                  {isEditable && activeWorkspaceId && (
                     <div className="flex items-center gap-2 opacity-100">
                       <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
                         <button
                           onClick={() =>
-                            updateResourceQuantity(
-                              activeWorkspace.id,
-                              item.id,
-                              Math.max(0, item.quantity - 5)
-                            )
+                            updateQuantityMutation.mutate({
+                              workspaceId: activeWorkspaceId,
+                              resourceId: item.id,
+                              quantity: Math.max(0, item.quantity - 5),
+                            })
                           }
                           className="p-2 hover:bg-gray-200 text-gray-600 border-r border-gray-200 transition-colors"
                         >
@@ -396,11 +440,11 @@ const ResourceManagement: React.FC = () => {
                         </button>
                         <button
                           onClick={() =>
-                            updateResourceQuantity(
-                              activeWorkspace.id,
-                              item.id,
-                              item.quantity + 5
-                            )
+                            updateQuantityMutation.mutate({
+                              workspaceId: activeWorkspaceId,
+                              resourceId: item.id,
+                              quantity: item.quantity + 5,
+                            })
                           }
                           className="p-2 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
@@ -409,10 +453,10 @@ const ResourceManagement: React.FC = () => {
                       </div>
                       <button
                         onClick={() =>
-                          deleteResourceFromWorkspace(
-                            activeWorkspace.id,
-                            item.id
-                          )
+                          deleteResourceMutation.mutate({
+                            workspaceId: activeWorkspaceId,
+                            resourceId: item.id,
+                          })
                         }
                         className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                       >
@@ -585,7 +629,7 @@ const ResourceManagement: React.FC = () => {
                 <p className="text-white/60 text-sm mt-1">
                   Generating plan for{' '}
                   <span className="text-white font-bold border-b border-white/30">
-                    {activeWorkspace.stage}
+                    {activeWorkspace.stage || 'Planning'}
                   </span>{' '}
                   phase
                 </p>
