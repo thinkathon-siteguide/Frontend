@@ -320,66 +320,57 @@ const ArchitectureGenerator: React.FC = () => {
                 </div>
 
                 {/* Lifecycle Phases */}
+                {/* Lifecycle Phases */}
                 {result && (
-          <div className="bg-white rounded-3xl shadow-soft border border-gray-100 overflow-hidden animate-fade-in-up">
-             <div className="bg-thinklab-black text-white p-4 flex justify-between items-center">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-bold text-lg text-thinklab-black flex items-center">
-                            <Briefcase className="w-5 h-5 mr-2 text-thinklab-red" /> Execution Lifecycle
-                        </h3>
-                        <button 
-                            onClick={handleSave}
-                            disabled={saved}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center transition ${saved ? 'bg-green-100 text-green-700' : 'bg-thinklab-black text-white hover:bg-gray-800'}`}
-                        >
-                            {saved ? <CheckCircle size={14} className="mr-1.5"/> : <Save size={14} className="mr-1.5"/>}
-                            {saved ? 'Saved' : 'Save to Project'}
-                        </button>
-                    </div>
-                    
-                    <div className="space-y-4">
-                         {result.stages.map((stage, idx) => (
-                             <div key={idx} className="group flex items-start p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
-                                 <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 font-bold flex items-center justify-center mr-4 group-hover:bg-thinklab-red group-hover:text-white transition-colors text-sm">
-                                     {idx + 1}
-                                 </div>
-                                 <div className="flex-1">
-                                     <div className="flex justify-between items-center mb-1">
-                                         <h4 className="font-bold text-thinklab-black text-sm">{stage.name}</h4>
-                                         <span className="text-[10px] font-bold bg-gray-100 px-2 py-0.5 rounded text-gray-500">{stage.duration}</span>
-                                     </div>
-                                     <p className="text-xs text-gray-500 leading-relaxed">{stage.description}</p>
-                                 </div>
-                             </div>
-                         ))}
-                    </div>
-
-                    <div className="mt-8 pt-6 border-t border-gray-100">
-                        <h4 className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-4 flex items-center">
-                             <Hammer className="w-3 h-3 mr-2" /> Recommended Resources
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                            {result.materials.map((mat, idx) => (
-                                <span key={idx} className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:border-gray-300 transition-colors cursor-default">
-                                    {mat}
-                                </span>
-                            ))}
+                  <div className="bg-white rounded-3xl shadow-soft border border-gray-100 overflow-hidden animate-fade-in-up">
+                     <div className="bg-thinklab-black text-white p-4 flex justify-between items-center">
+                        <div className="flex items-center">
+                             <Briefcase className="w-5 h-5 mr-2 text-thinklab-red" />
+                             <h3 className="font-bold text-lg">Execution Lifecycle</h3>
                         </div>
-                    </div>
-                </div>
-            </div>
-         ) : (
-            // Empty State for Right Panel
-            <div className="h-full bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center p-12">
-                <div className="w-24 h-24 bg-white rounded-full shadow-sm flex items-center justify-center mb-6 animate-pulse">
-                    <Sparkles className="w-10 h-10 text-gray-300" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-400">Blueprint Visualization</h3>
-                <p className="text-gray-400 text-sm mt-2 max-w-xs">
-                    Your generated architectural plans, timeline estimates, and resource breakdowns will appear here.
-                </p>
-            </div>
-         )}
+                         <button 
+                             onClick={handleSave}
+                             disabled={saved}
+                             className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center transition ${saved ? 'bg-green-100 text-green-700' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                         >
+                             {saved ? <CheckCircle size={14} className="mr-1.5"/> : <Save size={14} className="mr-1.5"/>}
+                             {saved ? 'Saved' : 'Save Plan'}
+                         </button>
+                     </div>
+                     
+                     <div className="p-6 space-y-6">
+                          <div className="space-y-4">
+                               {result.stages.map((stage, idx) => (
+                                   <div key={idx} className="group flex items-start p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
+                                       <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 font-bold flex items-center justify-center mr-4 group-hover:bg-thinklab-red group-hover:text-white transition-colors text-sm">
+                                           {idx + 1}
+                                       </div>
+                                       <div className="flex-1">
+                                           <div className="flex justify-between items-center mb-1">
+                                               <h4 className="font-bold text-thinklab-black text-sm">{stage.name}</h4>
+                                               <span className="text-[10px] font-bold bg-gray-100 px-2 py-0.5 rounded text-gray-500">{stage.duration}</span>
+                                           </div>
+                                           <p className="text-xs text-gray-500 leading-relaxed">{stage.description}</p>
+                                       </div>
+                                   </div>
+                               ))}
+                          </div>
+
+                          <div className="mt-8 pt-6 border-t border-gray-100">
+                              <h4 className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-4 flex items-center">
+                                   <Hammer className="w-3 h-3 mr-2" /> Recommended Resources
+                              </h4>
+                              <div className="flex flex-wrap gap-2">
+                                  {result.materials.map((mat, idx) => (
+                                      <span key={idx} className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:border-gray-300 transition-colors cursor-default">
+                                          {mat}
+                                      </span>
+                                  ))}
+                              </div>
+                          </div>
+                     </div>
+                  </div>
+                )}
       </div>
     </div>
   );
