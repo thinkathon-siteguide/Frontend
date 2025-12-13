@@ -1,7 +1,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
-import Auth from './pages/Auth';
+import AuthPage from './modules/auth/pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import ArchitectureGenerator from './pages/ArchitectureGenerator';
 import SafetyMonitor from './pages/SafetyMonitor';
@@ -26,7 +26,7 @@ const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const AppRoutes = () => {
   return (
       <Routes>
-        <Route path="/auth" element={<Auth />} />
+        <Route path="/auth" element={<AuthPage />} />
         
         {/* Protected Routes Wrapper */}
         <Route
