@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   FileText,
   Download,
@@ -25,6 +25,9 @@ import { GeneratedReport } from '../types';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 import { useWorkspaces } from '../modules/workspace/hooks/useWorkspaces';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { toast } from 'react-hot-toast';
 
 const Reports: React.FC = () => {
   const { activeWorkspaceId, setActiveWorkspace } = useApp();
@@ -34,6 +37,8 @@ const Reports: React.FC = () => {
   const [report, setReport] = useState<GeneratedReport | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [animateText, setAnimateText] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const activeWorkspace = workspaces.find((w) => w._id === activeWorkspaceId);
 
@@ -71,8 +76,58 @@ const Reports: React.FC = () => {
     }
   };
 
-  const handleExport = () => {
-    alert('Report exported to PDF (Demo)');
+  const handleExport = async () => {
+    if (!reportRef.current || !activeWorkspace || !report) return;
+
+    setExporting(true);
+    toast.loading('Generating PDF...');
+
+    try {
+      const element = reportRef.current;
+      
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 0;
+
+      pdf.addImage(
+        imgData,
+        'PNG',
+        imgX,
+        imgY,
+        imgWidth * ratio,
+        imgHeight * ratio
+      );
+
+      const fileName = `${activeWorkspace.name.replace(/\s+/g, '_')}_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+
+      toast.dismiss();
+      toast.success('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      toast.dismiss();
+      toast.error('Failed to generate PDF. Please try again.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   if (workspaces.length === 0) {
@@ -173,13 +228,22 @@ const Reports: React.FC = () => {
             </span>
           </button>
 
-          <button
-            disabled={!report}
-            onClick={handleExport}
-            className="w-full py-3 border border-gray-200 text-thinklab-black rounded-xl font-bold hover:bg-gray-50 transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Download className="w-4 h-4 mr-2" /> Download PDF
-          </button>
+           <button
+             disabled={!report || exporting}
+             onClick={handleExport}
+             className="w-full py-3 border border-gray-200 text-thinklab-black rounded-xl font-bold hover:bg-gray-50 transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+           >
+             {exporting ? (
+               <>
+                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                 Generating...
+               </>
+             ) : (
+               <>
+                 <Download className="w-4 h-4 mr-2" /> Download PDF
+               </>
+             )}
+           </button>
         </div>
 
         {/* Error Message */}
@@ -236,10 +300,13 @@ const Reports: React.FC = () => {
               Drafting report content...
             </p>
           </div>
-        ) : report ? (
-          <div className="bg-white w-full max-w-[800px] shadow-2xl min-h-[1000px] p-8 md:p-12 relative animate-fade-in-up">
-            {/* Paper Texture/Effect */}
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-b from-gray-100 to-transparent opacity-50"></div>
+         ) : report ? (
+           <div
+             ref={reportRef}
+             className="bg-white w-full max-w-[800px] shadow-2xl min-h-[1000px] p-8 md:p-12 relative animate-fade-in-up"
+           >
+             {/* Paper Texture/Effect */}
+             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-b from-gray-100 to-transparent opacity-50"></div>
 
             {/* Document Header */}
             <header className="flex justify-between items-start border-b-2 border-thinklab-black pb-8 mb-8">
