@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
+import { useWorkspaces } from '../modules/workspace';
 import { 
   BarChart, 
   Bar, 
@@ -30,9 +31,11 @@ import {
 } from 'recharts';
 
 const Dashboard: React.FC = () => {
-  const { workspaces, activeWorkspace, setActiveWorkspace, user } = useApp();
+  const { activeWorkspaceId, setActiveWorkspace, user } = useApp();
+  const { workspaces = [], isLoading } = useWorkspaces();
   const navigate = useNavigate();
 
+  const activeWorkspace = workspaces.find(w => w._id === activeWorkspaceId);
   const displayWorkspaces = activeWorkspace ? [activeWorkspace] : workspaces;
   const totalWorkspaces = workspaces.length;
   const safetyAlerts = workspaces.filter(w => w.safetyScore < 75).length;
@@ -85,6 +88,17 @@ const Dashboard: React.FC = () => {
     </div>
   );
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-thinklab-black mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (workspaces.length === 0) {
     return (
@@ -272,8 +286,8 @@ const Dashboard: React.FC = () => {
                         <DollarSign className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Est. Budget</p>
-                        <p className="font-serif font-bold text-xl text-thinklab-black">{activeWorkspace.architecturePlan.costEstimate}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Budget</p>
+                        <p className="font-serif font-bold text-xl text-thinklab-black">₦{activeWorkspace.budget}</p>
                     </div>
                  </div>
                  <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors">
@@ -281,8 +295,8 @@ const Dashboard: React.FC = () => {
                         <Clock className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Timeline</p>
-                        <p className="font-serif font-bold text-xl text-thinklab-black">{activeWorkspace.architecturePlan.timeline}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Materials</p>
+                        <p className="font-serif font-bold text-xl text-thinklab-black">{activeWorkspace.architecturePlan.materials.length} Items</p>
                     </div>
                  </div>
                  <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors">
@@ -329,9 +343,9 @@ const Dashboard: React.FC = () => {
             <tbody className="divide-y divide-gray-50">
               {displayWorkspaces.map((ws, index) => (
                 <tr 
-                    key={ws.id} 
+                    key={ws._id} 
                     className="hover:bg-gray-50 transition-colors group cursor-pointer"
-                    onClick={() => setActiveWorkspace(ws.id)}
+                    onClick={() => setActiveWorkspace(ws._id)}
                     style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <td className="px-6 py-5">
@@ -342,7 +356,7 @@ const Dashboard: React.FC = () => {
                         <div>
                             <p className="font-bold text-thinklab-black group-hover:text-thinklab-red transition-colors">{ws.name}</p>
                             <p className="text-xs text-gray-400 flex items-center mt-0.5">
-                                <Calendar size={10} className="mr-1" /> {ws.lastUpdated}
+                                <Calendar size={10} className="mr-1" /> {new Date(ws.updatedAt).toLocaleDateString()}
                             </p>
                         </div>
                     </div>

@@ -58,3 +58,30 @@
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #printable-report,
+  #printable-report * {
+    visibility: visible;
+  }
+  
+  #printable-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    margin: 0;
+    padding: 20mm;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}

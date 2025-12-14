@@ -36,7 +36,7 @@ export const generateArchitecturePlan = async (
     5. Project Close-out
 
     For each phase, provide a concise description of activities and estimated duration.
-    Also provide a total cost estimate in Naira, a total timeline, and a list of major materials needed.`;
+    Also provide sections describing key design aspects, materials with specifications, and a project summary.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -48,10 +48,28 @@ export const generateArchitecturePlan = async (
           properties: {
             costEstimate: { type: Type.STRING, description: "Estimated total cost in Naira" },
             timeline: { type: Type.STRING, description: "Total project duration" },
+            sections: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING }
+                }
+              },
+              description: "Key design sections (e.g., Foundation, Structural, Electrical)"
+            },
             materials: {
               type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "List of key materials needed"
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: { type: Type.STRING },
+                  quantity: { type: Type.STRING },
+                  specification: { type: Type.STRING }
+                }
+              },
+              description: "List of key materials with quantities and specifications"
             },
             stages: {
               type: Type.ARRAY,
