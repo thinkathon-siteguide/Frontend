@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -28,10 +28,7 @@ import {
   Search,
   Filter,
 } from 'lucide-react';
-import {
-  getResourceRecommendations,
-  generateResourceAllocation,
-} from '../services/geminiService';
+import { generateResourceAllocation } from '../services/geminiService';
 import { useApp } from '../context/AppContext';
 import { ResourceItem } from '../types';
 import { useWorkspaces } from '../modules/workspace/hooks/useWorkspaces';
@@ -55,13 +52,7 @@ const ResourceManagement: React.FC = () => {
   const bulkReplaceMutation = useBulkReplaceResources();
 
   const activeWorkspace = workspaces.find((w) => w._id === activeWorkspaceId);
-  const [recommendation, setRecommendation] = useState<string>(
-    'AI insights will appear here...'
-  );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [loadingRecommendation, setLoadingRecommendation] = useState(false);
-  const recommendationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastRecommendationRef = useRef<string>('');
 
   // Local state for modals/loading
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -129,45 +120,6 @@ const ResourceManagement: React.FC = () => {
     (r) => r.status === 'Critical'
   ).length;
   const lowItems = displayResources.filter((r) => r.status === 'Low').length;
-
-  useEffect(() => {
-    if (recommendationTimeoutRef.current) {
-      clearTimeout(recommendationTimeoutRef.current);
-    }
-
-    if (displayResources.length === 0) {
-      setRecommendation('Add resources to get AI insights...');
-      return;
-    }
-
-    const resourcesKey = JSON.stringify(
-      displayResources.map((r) => ({ name: r.name, quantity: r.quantity, status: r.status }))
-    );
-
-    if (resourcesKey === lastRecommendationRef.current) {
-      return;
-    }
-
-    recommendationTimeoutRef.current = setTimeout(async () => {
-      setLoadingRecommendation(true);
-      try {
-        const insight = await getResourceRecommendations(displayResources);
-        setRecommendation(insight);
-        lastRecommendationRef.current = resourcesKey;
-      } catch (error) {
-        console.error('Failed to get AI recommendation:', error);
-        setRecommendation('Unable to generate insights at this time.');
-      } finally {
-        setLoadingRecommendation(false);
-      }
-    }, 2000);
-
-    return () => {
-      if (recommendationTimeoutRef.current) {
-        clearTimeout(recommendationTimeoutRef.current);
-      }
-    };
-  }, [displayResources]);
 
   const handleWorkspaceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -339,7 +291,7 @@ const ResourceManagement: React.FC = () => {
       )}
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-2xl shadow-soft border border-gray-100 flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -371,23 +323,6 @@ const ResourceManagement: React.FC = () => {
             }`}
           >
             <AlertTriangle size={24} />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-r from-thinklab-black to-gray-800 p-6 rounded-2xl shadow-soft text-white relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-          <div className="relative z-10">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-              {loadingRecommendation ? (
-                <Loader2 size={12} className="text-yellow-400 animate-spin" />
-              ) : (
-                <Sparkles size={12} className="text-yellow-400" />
-              )}{' '}
-              AI Insight
-            </p>
-            <p className="mt-2 text-sm text-gray-200 leading-relaxed italic">
-              {loadingRecommendation ? 'Analyzing resources...' : `"${recommendation}"`}
-            </p>
           </div>
         </div>
       </div>
